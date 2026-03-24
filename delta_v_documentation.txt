@@ -1,0 +1,75 @@
+Differential Drive Kinematics Documentation
+
+This document outlines the kinematic derivations used for controlling a rear-wheel-drive robot car with Ackermann-style equivalent front steering, powered by independent continuous rotation servos.
+
+1. System Parameters
+
+$L$: Wheelbase (Distance between front and rear axles) = 158 mm
+
+$W$: Track Width (Distance between left and right rear wheels) = 180 mm
+
+$R$: Steering Servo Arm Radius = 28 mm
+
+$L_{eff}$: Effective Steering Link Length = 27 mm
+
+$\Delta \theta$: Servo motor steering angle deviation from center (0 degrees = straight)
+
+$\Delta \alpha$: Equivalent steering angle of the front axle
+
+$v$: Target linear velocity of the robot's center point
+
+2. Steering Geometry
+
+Based on the physical mechanical linkage, the relationship between the servo angle ($\Delta \theta$) and the equivalent front wheel steering angle ($\Delta \alpha$) is given by:
+
+
+$$\Delta \alpha = \arctan\left(\frac{R \cdot \sin(\Delta \theta)}{L_{eff}}\right)$$
+
+3. Kinematic Derivation
+
+Using the bicycle model, the turning radius $R_c$ of the rear axle center is:
+
+
+$$R_c = \frac{L}{\tan(\Delta \alpha)}$$
+
+Substituting the steering geometry equation into the turning radius equation:
+
+
+$$R_c = \frac{L \cdot L_{eff}}{R \cdot \sin(\Delta \theta)}$$
+
+The angular velocity $\omega$ of the vehicle around its Instantaneous Center of Rotation (ICR) is:
+
+
+$$\omega = \frac{v}{R_c} = v \cdot \frac{R \cdot \sin(\Delta \theta)}{L \cdot L_{eff}}$$
+
+4. Independent Wheel Velocities
+
+To maintain pure rolling (no slip), the outer wheel must travel faster than the inner wheel. The velocities of the left ($v_{left}$) and right ($v_{right}$) wheels are:
+
+
+$$v_{left} = \omega \left(R_c - \frac{W}{2}\right) = v - \frac{\omega \cdot W}{2}$$
+
+$$v_{right} = \omega \left(R_c + \frac{W}{2}\right) = v + \frac{\omega \cdot W}{2}$$
+
+Substituting $\omega$ back into these equations yields the differential velocity formulas implemented in the control system:
+
+
+$$v_{left} = v \cdot \left( 1 - \frac{W \cdot R \cdot \sin(\Delta \theta)}{2 \cdot L \cdot L_{eff}} \right)$$
+
+$$v_{right} = v \cdot \left( 1 + \frac{W \cdot R \cdot \sin(\Delta \theta)}{2 \cdot L \cdot L_{eff}} \right)$$
+
+5. Control System Implementation
+
+To optimize the microcontroller's processing load, the constant geometric parameters are pre-calculated as a single constant $C$:
+
+
+$$C = \frac{W \cdot R}{2 \cdot L \cdot L_{eff}}$$
+
+Thus, the final equations computed dynamically during runtime are:
+
+
+$$v_{left} = v \cdot (1 - C \cdot \sin(\Delta \theta))$$
+
+$$v_{right} = v \cdot (1 + C \cdot \sin(\Delta \theta))$$
+
+These velocities are then linearly mapped to PWM signals (0-180) for the continuous rotation servos.
