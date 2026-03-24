@@ -7,14 +7,14 @@ time.sleep(2)
 
 # ----- speed modes -----
 SLOW_SPEED = 40
-FAST_SPEED = 90
+FAST_SPEED = 80
 MAX_SPEED = FAST_SPEED
 
-MAX_STEER_LEFT = 30
-MAX_STEER_RIGHT = 150
+MAX_STEER_LEFT = 60
+MAX_STEER_RIGHT = 120
 
 ACCEL_STEP = 3
-STEER_STEP = 10
+STEER_STEP = 2
 
 target_speed = 0
 current_speed = 0
@@ -62,9 +62,9 @@ while True:
 
     # ----- ramp throttle -----
     if current_speed < target_speed:
-        current_speed = min(current_speed + ACCEL_STEP, target_speed)
+        current_speed += ACCEL_STEP
     elif current_speed > target_speed:
-        current_speed = max(current_speed - ACCEL_STEP, target_speed)
+        current_speed -= ACCEL_STEP
 
     # ----- ramp steering -----
     if current_steering < adjusted_target_steering:
