@@ -5,26 +5,17 @@ Servo steeringServo; // Pin 10
 Servo rightRear;     // Pin 11
 
 unsigned long lastSignalTime = 0;
-const unsigned long TIMEOUT = 500; 
+const unsigned long TIMEOUT = 500;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);  // Match Python baud rate
   leftRear.attach(9);
-  steeringServo.attach(10); 
-  rightRear.attach(11);    
-  
-  stopMotors();
-}
+  steeringServo.attach(10);
+  rightRear.attach(11);
 
-void setMotor(Servo &motor, int power, bool invert = false) {
-  power = constrain(power, -100, 100);
-  int signal = (invert) ? (90 - power * 0.5) : (90 + power * 0.5);
-  motor.write(signal);
-}
-
-void stopMotors() {
-  setMotor(leftRear, 0);
-  setMotor(rightRear, 0);
+  // Safe start: all servos to neutral
+  leftRear.write(90);
+  rightRear.write(90);
   steeringServo.write(90);
 }
 
@@ -39,15 +30,19 @@ void loop() {
       int R = data.substring(firstComma + 1, secondComma).toInt();
       int S = data.substring(secondComma + 1).toInt();
 
-      setMotor(leftRear, L);
-      setMotor(rightRear, R, true); // Pin 11 motor
-      steeringServo.write(constrain(S, 45, 135)); // Pin 10 servo
-      
+      // Write servo values directly (all computation done on laptop)
+      leftRear.write(constrain(L, 0, 180));
+      rightRear.write(constrain(R, 0, 180));
+      steeringServo.write(constrain(S, 45, 135));
+
       lastSignalTime = millis();
     }
   }
 
+  // Safety timeout: stop if no signal received
   if (millis() - lastSignalTime > TIMEOUT) {
-    stopMotors();
+    leftRear.write(90);
+    rightRear.write(90);
+    steeringServo.write(90);
   }
 }
